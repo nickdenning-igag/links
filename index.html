@@ -21,6 +21,20 @@
 
 <label for="tournament-select">Select Tournament:</label>
 <select id="tournament-select">
+<div style="margin:10px 0;">
+  <label for="sort-select">Sort by:</label>
+  <select id="sort-select">
+    <option value="rank">Rank</option>
+    <option value="total_score">Total Score</option>
+    <option value="to_par">To Par</option>
+    <option value="driving_distance">Driving Distance</option>
+    <option value="greens_in_regulation">GIR %</option>
+    <option value="putts">Putts</option>
+  </select>
+  
+  <label for="filter-input" style="margin-left:20px;">Filter by Player:</label>
+  <input type="text" id="filter-input" placeholder="Type player name...">
+</div>
   <option value="">Loading tournaments...</option>
 </select>
 
@@ -91,6 +105,61 @@ async function fetchLeaderboard(tournamentId) {
 }
 
 function renderLeaderboard(players) {
+ const sortSelect = document.getElementById('sort-select');
+const filterInput = document.getElementById('filter-input');
+let currentPlayers = []; // keep the latest leaderboard
+
+// Update renderLeaderboard to save current data
+function renderLeaderboard(players) {
+  currentPlayers = players; // save for sorting/filtering
+  const tbody = document.querySelector('#leaderboard tbody');
+  tbody.innerHTML = '';
+
+  // Apply filtering first
+  const filterText = filterInput.value.toLowerCase();
+  let displayedPlayers = players.filter(p => 
+    `${p.first_name} ${p.last_name}`.toLowerCase().includes(filterText)
+  );
+
+  // Apply sorting
+  const sortBy = sortSelect.value;
+  displayedPlayers.sort((a, b) => {
+    let valA = a[sortBy] ?? (a.stats?.[sortBy] ?? 0);
+    let valB = b[sortBy] ?? (b.stats?.[sortBy] ?? 0);
+    // smaller numbers are better for To Par and Total Score
+    if(sortBy === 'to_par' || sortBy === 'total_score') return valA - valB;
+    // bigger numbers better for stats
+    return valB - valA;
+  });
+
+  if (!displayedPlayers.length) {
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;">No data matches filter</td></tr>`;
+    return;
+  }
+
+  displayedPlayers.forEach(player => {
+    const row = document.createElement('tr');
+    if (player.rank <= 3) row.classList.add('top-player');
+
+    row.innerHTML = `
+      <td>${player.rank}</td>
+      <td>${player.first_name} ${player.last_name}</td>
+      <td>${player.total_score}</td>
+      <td>${player.to_par}</td>
+      <td>${player.rounds[0]?.score ?? '-'}</td>
+      <td>${player.rounds[1]?.score ?? '-'}</td>
+      <td>${player.rounds[2]?.score ?? '-'}</td>
+      <td>${player.rounds[3]?.score ?? '-'}</td>
+      <td>${player.stats?.driving_distance ?? '-'}</td>
+      <td>${player.stats?.greens_in_regulation ?? '-'}</td>
+      <td>${player.stats?.putts ?? '-'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+// Event listeners
+sortSelect.addEventListener('change', () => renderLeaderboard(currentPlayers));
+filterInput.addEventListener('input', () => renderLeaderboard(currentPlayers));
   const tbody = document.querySelector('#leaderboard tbody');
   tbody.innerHTML = '';
 
@@ -124,6 +193,166 @@ function resetLeaderboard() {
 
 // Load tournaments on page load
 fetchTournaments();
+
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PGA Leaderboard</title>
+<style>
+  body { font-family: sans-serif; margin: 20px; background: #f4f4f4; }
+  table { border-collapse: collapse; width: 100%; margin-top: 10px; background: #fff; }
+  th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center; }
+  th { background: #eee; cursor: pointer; }
+  .top-player { background: #d4edda; }
+  #filter-input, #sort-select { padding: 4px; margin-left: 5px; }
+</style>
+</head>
+<body>
+
+<h2>PGA Leaderboard</h2>
+
+<!-- Tournament select -->
+<label for="tournament-select">Tournament:</label>
+<select id="tournament-select"></select>
+
+<!-- Sorting and filtering controls -->
+<div style="margin:10px 0;">
+  <label for="sort-select">Sort by:</label>
+  <select id="sort-select">
+    <option value="rank">Rank</option>
+    <option value="total_score">Total Score</option>
+    <option value="to_par">To Par</option>
+    <option value="driving_distance">Driving Distance</option>
+    <option value="greens_in_regulation">GIR %</option>
+    <option value="putts">Putts</option>
+  </select>
+
+  <label for="filter-input" style="margin-left:20px;">Filter by Player:</label>
+  <input type="text" id="filter-input" placeholder="Type player name...">
+</div>
+
+<!-- Leaderboard table -->
+<table id="leaderboard">
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Player</th>
+      <th>Total</th>
+      <th>To Par</th>
+      <th>R1</th>
+      <th>R2</th>
+      <th>R3</th>
+      <th>R4</th>
+      <th>Driving Distance</th>
+      <th>GIR %</th>
+      <th>Putts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="11">Loading...</td></tr>
+  </tbody>
+</table>
+
+<script>
+// ==== MOCK DATA ====
+let tournaments = [
+  {id:1,name:"The Players Championship"},
+  {id:2,name:"Masters Tournament"}
+];
+
+let samplePlayers = [
+  {rank:1, first_name:"Scottie", last_name:"Scheffler", total_score:270, to_par:-18,
+   rounds:[{score:66},{score:67},{score:68},{score:69}],
+   stats:{driving_distance:310,greens_in_regulation:70,putts:28}},
+  {rank:2, first_name:"Rory", last_name:"McIlroy", total_score:272, to_par:-16,
+   rounds:[{score:68},{score:66},{score:69},{score:69}],
+   stats:{driving_distance:315,greens_in_regulation:68,putts:29}},
+  {rank:3, first_name:"Patrick", last_name:"Cantlay", total_score:273, to_par:-15,
+   rounds:[{score:67},{score:68},{score:68},{score:70}],
+   stats:{driving_distance:312,greens_in_regulation:69,putts:27}}
+];
+
+let currentPlayers = [];
+
+// ==== INIT ====
+const tournamentSelect = document.getElementById('tournament-select');
+tournaments.forEach(t => {
+  const opt = document.createElement('option');
+  opt.value = t.id;
+  opt.textContent = t.name;
+  tournamentSelect.appendChild(opt);
+});
+
+// ==== SORT & FILTER ELEMENTS ====
+const sortSelect = document.getElementById('sort-select');
+const filterInput = document.getElementById('filter-input');
+
+// ==== RENDER LEADERBOARD ====
+function renderLeaderboard(players) {
+  currentPlayers = players;
+  const tbody = document.querySelector('#leaderboard tbody');
+  tbody.innerHTML = '';
+
+  // Apply filter
+  const filterText = filterInput.value.toLowerCase();
+  let displayedPlayers = players.filter(p =>
+    `${p.first_name} ${p.last_name}`.toLowerCase().includes(filterText)
+  );
+
+  // Apply sort
+  const sortBy = sortSelect.value;
+  displayedPlayers.sort((a,b)=>{
+    let valA = a[sortBy] ?? (a.stats?.[sortBy] ?? 0);
+    let valB = b[sortBy] ?? (b.stats?.[sortBy] ?? 0);
+    if(sortBy==='to_par' || sortBy==='total_score') return valA - valB; // smaller better
+    return valB - valA; // bigger better for stats
+  });
+
+  if(!displayedPlayers.length){
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;">No data matches filter</td></tr>`;
+    return;
+  }
+
+  displayedPlayers.forEach(player=>{
+    const row = document.createElement('tr');
+    if(player.rank<=3) row.classList.add('top-player');
+    row.innerHTML = `
+      <td>${player.rank}</td>
+      <td>${player.first_name} ${player.last_name}</td>
+      <td>${player.total_score}</td>
+      <td>${player.to_par}</td>
+      <td>${player.rounds[0]?.score ?? '-'}</td>
+      <td>${player.rounds[1]?.score ?? '-'}</td>
+      <td>${player.rounds[2]?.score ?? '-'}</td>
+      <td>${player.rounds[3]?.score ?? '-'}</td>
+      <td>${player.stats?.driving_distance ?? '-'}</td>
+      <td>${player.stats?.greens_in_regulation ?? '-'}</td>
+      <td>${player.stats?.putts ?? '-'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// ==== EVENT LISTENERS ====
+sortSelect.addEventListener('change',()=>renderLeaderboard(currentPlayers));
+filterInput.addEventListener('input',()=>renderLeaderboard(currentPlayers));
+tournamentSelect.addEventListener('change',()=>fetchLeaderboard());
+
+// ==== FETCH LEADERBOARD ====
+function fetchLeaderboard(){
+  // For now, use sample data
+  renderLeaderboard(samplePlayers);
+}
+
+// ==== INITIAL LOAD ====
+fetchLeaderboard();
+
+</script>
+
+</body>
+</html>
 </script>
 
 </body>

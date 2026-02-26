@@ -144,10 +144,10 @@ function renderLeaderboard(players) {
     return;
   }
 
-  displayedPlayers.forEach(player => {
+  displayedPlayers.forEach(player) => {
     const row = document.createElement('tr');
     if (player.rank <= 3) row.classList.add('top-player');
-  })
+  }
 
     row.innerHTML = `{
       <td>${player.rank}</td>
@@ -353,6 +353,35 @@ function fetchLeaderboard(){
 
 // ==== INITIAL LOAD ====
 fetchLeaderboard();
+// Sample data for testing
+const sampleData = [
+  { name: 'Rory McIlroy', rank: 1, total_score: -10, to_par: -10, driving_distance: 320, greens_in_regulation: 68, putts: 110 },
+  { name: 'Scottie Scheffler', rank: 2, total_score: -9, to_par: -9, driving_distance: 315, greens_in_regulation: 70, putts: 112 },
+  // Add more players...
+];
+
+// Function to render leaderboard
+function renderLeaderboard(sortBy) {
+  const leaderboard = document.getElementById('leaderboard');
+  leaderboard.innerHTML = '';
+
+  // Sort by selected option
+  const sortedData = [...sampleData].sort((a, b) => b[sortBy] - a[sortBy]);
+
+  sortedData.forEach(player => {
+    const div = document.createElement('div');
+    div.textContent = `${player.rank}. ${player.name} - ${player[sortBy]}`;
+    leaderboard.appendChild(div);
+  });
+}
+
+// Initial render
+renderLeaderboard('rank');
+
+// Listen for sort changes
+document.getElementById('sort-select').addEventListener('change', (e) => {
+  renderLeaderboard(e.target.value);
+});
 
 </script>
 

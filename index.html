@@ -21,6 +21,12 @@
 
 <label for="tournament-select">Select Tournament:</label>
 <select id="tournament-select">
+  <option value="masters">Masters</option>
+  <option value="us_open">US Open</option>
+  <option value="pga_championship">PGA Championship</option>
+  <option value="the_open">The Open</option>
+</select>
+
 <div style="margin:10px 0;">
   <label for="sort-select">Sort by:</label>
   <select id="sort-select">
@@ -31,6 +37,7 @@
     <option value="greens_in_regulation">GIR %</option>
     <option value="putts">Putts</option>
   </select>
+</div>
   
   <label for="filter-input" style="margin-left:20px;">Filter by Player:</label>
   <input type="text" id="filter-input" placeholder="Type player name...">
@@ -140,8 +147,9 @@ function renderLeaderboard(players) {
   displayedPlayers.forEach(player => {
     const row = document.createElement('tr');
     if (player.rank <= 3) row.classList.add('top-player');
+  }
 
-    row.innerHTML = `
+    row.innerHTML = `{
       <td>${player.rank}</td>
       <td>${player.first_name} ${player.last_name}</td>
       <td>${player.total_score}</td>
@@ -153,9 +161,7 @@ function renderLeaderboard(players) {
       <td>${player.stats?.driving_distance ?? '-'}</td>
       <td>${player.stats?.greens_in_regulation ?? '-'}</td>
       <td>${player.stats?.putts ?? '-'}</td>
-    `;
-    tbody.appendChild(row);
-  });
+      }
 
 // Event listeners
 sortSelect.addEventListener('change', () => renderLeaderboard(currentPlayers));
@@ -184,7 +190,6 @@ filterInput.addEventListener('input', () => renderLeaderboard(currentPlayers));
     `;
     tbody.appendChild(row);
   });
-}
 
 function resetLeaderboard() {
   const tbody = document.querySelector('#leaderboard tbody');

@@ -255,25 +255,21 @@ fetchTournaments();
 
 <!-- Leaderboard table -->
 <table id="leaderboard">
+ <table>
   <thead>
     <tr>
       <th>Rank</th>
-      <th>Player</th>
-      <th>Total</th>
+      <th>Name</th>
+      <th>Total Score</th>
       <th>To Par</th>
-      <th>R1</th>
-      <th>R2</th>
-      <th>R3</th>
-      <th>R4</th>
       <th>Driving Distance</th>
       <th>GIR %</th>
       <th>Putts</th>
     </tr>
   </thead>
-  <tbody>
-    <tr><td colspan="11">Loading...</td></tr>
-  </tbody>
+  <tbody id="leaderboard-body"></tbody>
 </table>
+renderLeaderboard(displayedPlayers);
 
 <script>
 // ==== MOCK DATA ====

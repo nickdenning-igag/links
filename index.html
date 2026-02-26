@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PGA Leaderboard</title>
+<title>PGA Leaderboard - Round Stats</title>
 <style>
   body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
   h1 { text-align: center; }
@@ -12,6 +12,7 @@
   th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ccc; }
   th { background: #333; color: #fff; }
   tr:hover { background: #e0f7fa; }
+  .top-player { background: #c8e6c9 !important; } /* highlight top 3 */
 </style>
 </head>
 <body>
@@ -28,12 +29,16 @@
     <tr>
       <th>Rank</th>
       <th>Player</th>
-      <th>Score</th>
+      <th>Total</th>
       <th>To Par</th>
+      <th>R1</th>
+      <th>R2</th>
+      <th>R3</th>
+      <th>R4</th>
     </tr>
   </thead>
   <tbody>
-    <tr><td colspan="4" style="text-align:center;">Select a tournament</td></tr>
+    <tr><td colspan="8" style="text-align:center;">Select a tournament</td></tr>
   </tbody>
 </table>
 
@@ -72,7 +77,7 @@ function populateTournamentDropdown(tournaments) {
 
 async function fetchLeaderboard(tournamentId) {
   const tbody = document.querySelector('#leaderboard tbody');
-  tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Loading...</td></tr>`;
   try {
     const res = await fetch(`https://api.balldontlie.io/pga/v1/leaderboards?tournament_id=${tournamentId}`, {
       headers: { Authorization: apiKey }
@@ -81,7 +86,7 @@ async function fetchLeaderboard(tournamentId) {
     renderLeaderboard(data.leaderboard || []);
   } catch (err) {
     console.error('Error fetching leaderboard:', err);
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;">Failed to load data</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:red;">Failed to load data</td></tr>`;
   }
 }
 
@@ -90,17 +95,23 @@ function renderLeaderboard(players) {
   tbody.innerHTML = '';
 
   if (!players.length) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No data available</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No data available</td></tr>`;
     return;
   }
 
   players.forEach(player => {
     const row = document.createElement('tr');
+    if (player.rank <= 3) row.classList.add('top-player'); // highlight top 3
+
     row.innerHTML = `
       <td>${player.rank}</td>
       <td>${player.first_name} ${player.last_name}</td>
       <td>${player.total_score}</td>
       <td>${player.to_par}</td>
+      <td>${player.rounds[0]?.score ?? '-'}</td>
+      <td>${player.rounds[1]?.score ?? '-'}</td>
+      <td>${player.rounds[2]?.score ?? '-'}</td>
+      <td>${player.rounds[3]?.score ?? '-'}</td>
     `;
     tbody.appendChild(row);
   });
@@ -108,7 +119,7 @@ function renderLeaderboard(players) {
 
 function resetLeaderboard() {
   const tbody = document.querySelector('#leaderboard tbody');
-  tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Select a tournament</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Select a tournament</td></tr>`;
 }
 
 // Load tournaments on page load

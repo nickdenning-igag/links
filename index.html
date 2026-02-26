@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PGA Leaderboard</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+  h1 { text-align: center; }
+  select { padding: 5px; margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
+  th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ccc; }
+  th { background: #333; color: #fff; }
+  tr:hover { background: #e0f7fa; }
+</style>
+</head>
+<body>
+
+<h1>PGA Leaderboard 2026</h1>
+
+<label for="tournament-select">Select Tournament:</label>
+<select id="tournament-select">
+  <option value="">Loading tournaments...</option>
+</select>
+
+<table id="leaderboard">
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Player</th>
+      <th>Score</th>
+      <th>To Par</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="4" style="text-align:center;">Select a tournament</td></tr>
+  </tbody>
+</table>
+
+<script>
+const apiKey = 'f37cf929-4c26-4fbd-9f7f-3fb354107b15'; // Your key
+
+async function fetchTournaments() {
+  try {
+    const res = await fetch('https://api.balldontlie.io/pga/v1/tournaments?season=2026', {
+      headers: { Authorization: apiKey }
+    });
+    const data = await res.json();
+    populateTournamentDropdown(data.tournaments);
+  } catch (err) {
+    console.error('Error fetching tournaments:', err);
+    document.getElementById('tournament-select').innerHTML =
+      `<option value="">Failed to load tournaments</option>`;
+  }
+}
+
+function populateTournamentDropdown(tournaments) {
+  const select = document.getElementById('tournament-select');
+  select.innerHTML = '<option value="">--Select Tournament--</option>';
+  tournaments.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = t.name;
+    select.appendChild(opt);
+  });
+
+  select.addEventListener('change', e => {
+    if (e.target.value) fetchLeaderboard(e.target.value);
+    else resetLeaderboard();
+  });
+}
+
+async function fetchLeaderboard(tournamentId) {
+  const tbody = document.querySelector('#leaderboard tbody');
+  tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>`;
+  try {
+    const res = await fetch(`https://api.balldontlie.io/pga/v1/leaderboards?tournament_id=${tournamentId}`, {
+      headers: { Authorization: apiKey }
+    });
+    const data = await res.json();
+    renderLeaderboard(data.leaderboard || []);
+  } catch (err) {
+    console.error('Error fetching leaderboard:', err);
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;">Failed to load data</td></tr>`;
+  }
+}
+
+function renderLeaderboard(players) {
+  const tbody = document.querySelector('#leaderboard tbody');
+  tbody.innerHTML = '';
+
+  if (!players.length) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No data available</td></tr>`;
+    return;
+  }
+
+  players.forEach(player => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${player.rank}</td>
+      <td>${player.first_name} ${player.last_name}</td>
+      <td>${player.total_score}</td>
+      <td>${player.to_par}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function resetLeaderboard() {
+  const tbody = document.querySelector('#leaderboard tbody');
+  tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Select a tournament</td></tr>`;
+}
+
+// Load tournaments on page load
+fetchTournaments();
+</script>
+
+</body>
+</html>

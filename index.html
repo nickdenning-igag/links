@@ -175,13 +175,10 @@ const tbody = document.querySelector('#players-table tbody'); // make sure your 
 
 if (!players || !players.length) {
   tbody.innerHTML = `
-    <tr>
-      <td colspan="8" style="text-align:center; font-style: italic; color: var(--muted);">
-        No data available
-      </td>
-    </tr>
-  `;
-  return;
+  <tr>
+    <td colspan="8" style="text-align:center;">No data available</td>
+  </tr>
+`;
 }
   players.forEach(player => {
     const row = document.createElement('tr');

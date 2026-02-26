@@ -144,11 +144,13 @@ function renderLeaderboard(players) {
     return;
   }
 
-  displayedPlayers.forEach (player => {
+ displayedPlayers.forEach(player => {
     const row = document.createElement('tr');
-    if (player.rank) <= 3 row.classList.add('top-player');
-  });
-
+    if (player.rank && player.rank <= 3) {
+        row.classList.add('top-player');
+    }
+});
+  
     row.innerHTML = `{
       <td>${player.rank}</td>
       <td>${player.first_name} ${player.last_name}</td>

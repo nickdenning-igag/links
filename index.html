@@ -164,53 +164,70 @@ function renderLeaderboard(players) {
       <td>${player.stats?.greens_in_regulation ?? '-'}</td>
       <td>${player.stats?.putts ?? '-'}</td>
       }
+/* CSS */
+.top-player {
+  background-color: #ffd700; /* Gold highlight for top 3 */
+  font-weight: bold;
+}
 
-// Event listeners
+// JavaScript
 function renderLeaderboard(players) {
   const tbody = document.getElementById('leaderboard-body');
-  
-  // Clear table or show "No data"
-  if (!players || !players.length) {
-    tbody.innerHTML = `
-  <tr>
-    <td colspan="8" style="text-align:center;">No data available</td>
-  </tr>
-`;
+  if (!tbody) return;
+
+  // Clear any existing rows
+  tbody.innerHTML = '';
+
+  // Show "No data available" if the array is empty
+  if (!players || players.length === 0) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 7; // must match number of columns
+    td.style.textAlign = 'center';
+    td.textContent = 'No data available';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
     return;
   }
 
-  // Clear existing rows
-  tbody.innerHTML = '';
-
-  // Loop through players
+  // Populate table rows
   players.forEach(player => {
-    const row = document.createElement('tr');
+    const tr = document.createElement('tr');
 
-    // Highlight top 3 players
+    // Highlight top 3
     if (player.rank && player.rank <= 3) {
-      row.classList.add('top-player');
+      tr.classList.add('top-player');
     }
 
-    // Fill row with player data
-    row.innerHTML = `
-      <td>${player.rank || '-'}</td>
-      <td>${player.name || '-'}</td>
-      <td>${player.total_score || '-'}</td>
-      <td>${player.to_par || '-'}</td>
-      <td>${player.driving_distance || '-'}</td>
-      <td>${player.greens_in_regulation || '-'}</td>
-      <td>${player.putts || '-'}</td>
-      <td>${player.status || '-'}</td>
-    `;
+    // Table cells
+    const cells = [
+      player.rank || '-',
+      player.name || '-',
+      player.total_score || '-',
+      player.to_par || '-',
+      player.driving_distance || '-',
+      player.gir_percent || '-',
+      player.putts || '-'
+    ];
 
-    tbody.appendChild(row);
+    cells.forEach(value => {
+      const td = document.createElement('td');
+      td.textContent = value;
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
   });
 }
-function resetLeaderboard() {
-  const tbody = document.querySelector('#leaderboard tbody');
-  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Select a tournament</td></tr>`;
-}
 
+// Example usage:
+const displayedPlayers = [
+  { rank: 1, name: "Tiger Woods", total_score: 68, to_par: -4, driving_distance: 315, gir_percent: 72, putts: 28 },
+  { rank: 2, name: "Rory McIlroy", total_score: 69, to_par: -3, driving_distance: 310, gir_percent: 70, putts: 29 },
+  { rank: 4, name: "Jon Rahm", total_score: 70, to_par: -2, driving_distance: 305, gir_percent: 68, putts: 30 }
+];
+
+renderLeaderboard(displayedPlayers);
 // Load tournaments on page load
 fetchTournaments();
 

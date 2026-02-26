@@ -166,37 +166,46 @@ function renderLeaderboard(players) {
       }
 
 // Event listeners
-sortSelect.addEventListener('change', () => renderLeaderboard(currentPlayers));
-filterInput.addEventListener('input', () => renderLeaderboard(currentPlayers));
-  const tbody = document.querySelector('#leaderboard tbody');
+function renderLeaderboard(players) {
+  const tbody = document.getElementById('leaderboard-body');
+  
+  // Clear table or show "No data"
+  if (!players || !players.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align:center;">No data available</td>
+      </tr>
+    `;
+    return;
+  }
+
+  // Clear existing rows
   tbody.innerHTML = '';
 
-const tbody = document.querySelector('#players-table tbody'); // make sure your table has id="players-table"
-
-if (!players || !players.length) {
-  tbody.innerHTML = `
-  <tr>
-    <td colspan="8" style="text-align:center;">No data available</td>
-  </tr>
-`;
-}
+  // Loop through players
   players.forEach(player => {
     const row = document.createElement('tr');
-    if (player.rank <= 3) row.classList.add('top-player'); // highlight top 3
 
+    // Highlight top 3 players
+    if (player.rank && player.rank <= 3) {
+      row.classList.add('top-player');
+    }
+
+    // Fill row with player data
     row.innerHTML = `
-      <td>${player.rank}</td>
-      <td>${player.first_name} ${player.last_name}</td>
-      <td>${player.total_score}</td>
-      <td>${player.to_par}</td>
-      <td>${player.rounds[0]?.score ?? '-'}</td>
-      <td>${player.rounds[1]?.score ?? '-'}</td>
-      <td>${player.rounds[2]?.score ?? '-'}</td>
-      <td>${player.rounds[3]?.score ?? '-'}</td>
+      <td>${player.rank || '-'}</td>
+      <td>${player.name || '-'}</td>
+      <td>${player.total_score || '-'}</td>
+      <td>${player.to_par || '-'}</td>
+      <td>${player.driving_distance || '-'}</td>
+      <td>${player.greens_in_regulation || '-'}</td>
+      <td>${player.putts || '-'}</td>
+      <td>${player.status || '-'}</td>
     `;
+
     tbody.appendChild(row);
   });
-
+}
 function resetLeaderboard() {
   const tbody = document.querySelector('#leaderboard tbody');
   tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Select a tournament</td></tr>`;
